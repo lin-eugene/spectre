@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ProjectView, SpectrumViewId } from "@/lib/contract";
 import { readTokens } from "@/lib/viz/colors";
 import { buildResidues, buildRootIndex } from "@/lib/viz/data";
-import Bruker1DView from "./Bruker1DView";
 import { HsqcView } from "./HsqcView";
 import { MatrixView } from "./MatrixView";
 import { PlanesView } from "./PlanesView";
@@ -25,8 +24,8 @@ export interface SpectrumPanelProps {
   highlightResidues: number[];
   onSelectResidue: (resi: number | null) => void;
   onSelectRoot: (root: string | null) => void;
-  brukerExperiment: string | null;
-  onBrukerExperimentChange: (exp: string) => void;
+  /** spectrum type of the 'strips3d' view (e.g. hnca) */
+  cubeExperiment: string | null;
   /** Spectra tab deep link: real spectrum name and slice ppm (both optional) */
   planeSpectrum?: string | null;
   planeAt?: number | null;
@@ -39,7 +38,6 @@ const TABS: { id: SpectrumViewId; label: string; title: string }[] = [
   { id: "planes", label: "Spectra", title: "Measured spectra" },
   { id: "strips", label: "Strips", title: "Sequential walk (strip plot)" },
   { id: "matrix", label: "Connectivity", title: "Residue × residue connectivity" },
-  { id: "bruker1d", label: "1D ¹H", title: "Raw 1D ¹H processing" },
 ];
 
 function IconTable() {
@@ -72,8 +70,7 @@ export default function SpectrumPanel(props: SpectrumPanelProps) {
     highlightResidues,
     onSelectResidue,
     onSelectRoot,
-    brukerExperiment,
-    onBrukerExperimentChange,
+    cubeExperiment,
     planeSpectrum,
     planeAt,
     onPlaneChange,
@@ -114,8 +111,6 @@ export default function SpectrumPanel(props: SpectrumPanelProps) {
         return selectedResidue != null ? `walk around residue ${selectedResidue}` : `${stats ? stats.roots : project.hsqc.length} strips · drag to rotate`;
       case "matrix":
         return `${project.sequence.length} × ${project.sequence.length} residues`;
-      case "bruker1d":
-        return "raw Bruker FIDs, processed in the browser";
       case "planes": {
         const n = project.realSpectra?.length ?? 0;
         return n ? `${n} measured ${n === 1 ? "spectrum" : "spectra"}${project.attribution ? ` · ${project.attribution.license}` : ""}` : "none imported";
@@ -124,7 +119,7 @@ export default function SpectrumPanel(props: SpectrumPanelProps) {
   })();
 
   const tab = TABS.find((t) => t.id === view) ?? TABS[0];
-  const tableable = view !== "bruker1d" && !(view === "planes" && !project.realSpectra?.length);
+  const tableable = !(view === "planes" && !project.realSpectra?.length);
 
   return (
     <section ref={rootRef} className={styles.root} aria-label="Spectrum viewer">
@@ -164,11 +159,8 @@ export default function SpectrumPanel(props: SpectrumPanelProps) {
         {view === "hsqc" && <HsqcView {...common} />}
         {view === "planes" && <PlanesView {...common} planeSpectrum={planeSpectrum} planeAt={planeAt} onPlaneChange={onPlaneChange} />}
         {view === "strips" && <StripsView {...common} />}
-        {view === "strips3d" && <Strips3DView {...common} experiment={brukerExperiment} onShowView={onViewChange} />}
+        {view === "strips3d" && <Strips3DView {...common} experiment={cubeExperiment} onShowView={onViewChange} />}
         {view === "matrix" && <MatrixView {...common} />}
-        {view === "bruker1d" && (
-          <Bruker1DView experiment={brukerExperiment} onExperimentChange={onBrukerExperimentChange} height={Math.max(360, Math.min(560, width * 0.8))} />
-        )}
       </div>
     </section>
   );

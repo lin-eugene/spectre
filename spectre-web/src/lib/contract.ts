@@ -188,7 +188,7 @@ export interface ImportJob {
 }
 
 /** Effects the agent (or a tool) asks the UI to perform. */
-export type SpectrumViewId = "hsqc" | "strips" | "strips3d" | "matrix" | "bruker1d" | "planes";
+export type SpectrumViewId = "hsqc" | "strips" | "strips3d" | "matrix" | "planes";
 export type ColorScheme = "confidence" | "secondary" | "residue" | "hydrophobicity" | "bfactor";
 export type Representation = "cartoon" | "cartoon+atoms" | "sticks" | "spheres";
 
@@ -229,9 +229,6 @@ export const ACTION_NAMES = [
   "list_problems",
   "explain_assignment",
   "export_results",
-  "list_bruker_experiments",
-  "process_bruker_1d",
-  "deconvolve_1d",
   "structure_neighbors",
   "secondary_structure_from_shifts",
   "list_artina_proteins",

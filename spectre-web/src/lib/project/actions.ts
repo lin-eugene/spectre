@@ -10,9 +10,6 @@ import { chemicalShiftIndex, modelFor, structureNeighbours } from "../structure/
 import { EXPERIMENTS } from "../spectra/experiments";
 import { P1TO3 } from "../residues";
 import { parsePdb } from "../structure/pdb";
-import { deconvolve1D, processBruker1D } from "../bruker";
-import type { ProcessOptions } from "../bruker/types";
-import { listBrukerDemo, readBrukerDemo } from "./demo";
 import type { ProjectState } from "./types";
 import { TOLERANCE } from "../peaklists/build";
 import { attachAlphafoldModel, attachEsmfoldModel } from "./structure";
@@ -198,22 +195,6 @@ function assignmentSummary(state: ProjectState) {
   };
 }
 
-function bruker(experiment: string) {
-  const raw = readBrukerDemo(experiment);
-  if (!raw) return { error: `unknown experiment "${experiment}" (see list_bruker_experiments)` };
-  return { raw };
-}
-
-function processOptions(args: Record<string, unknown>): ProcessOptions {
-  const opts: ProcessOptions = {};
-  if (typeof args.lb === "number") opts.lb = args.lb;
-  if (typeof args.window === "string") opts.window = args.window as ProcessOptions["window"];
-  if (typeof args.baseline === "string") opts.baseline = args.baseline as ProcessOptions["baseline"];
-  if (args.phase === "manual") opts.phase = { ph0: Number(args.ph0 ?? 0), ph1: Number(args.ph1 ?? 0) };
-  else if (args.phase === "auto" || args.phase === "procs") opts.phase = args.phase;
-  return opts;
-}
-
 function errMsg(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
@@ -239,7 +220,6 @@ const ACTIONS: Record<ActionName, ActionImpl> = {
         spectra: state.spectra.map((s) => ({ type: s.tp, label: EXPERIMENTS[s.tp]?.label ?? s.tp, peaks: s.peaks.length })),
         spinSystems: state.hsqc.length,
         assignment: assignmentSummary(state),
-        rawBrukerExperiments: listBrukerDemo().length,
         realSpectra: state.realSpectra?.length || undefined,
         ...(state.inputs
           ? {
@@ -540,87 +520,6 @@ const ACTIONS: Record<ActionName, ActionImpl> = {
     },
   },
 
-  list_bruker_experiments: {
-    name: "list_bruker_experiments",
-    description: "List the raw Bruker 1D experiments (FID + acquisition parameters) available on this server, with their titles. None are bundled; there may be none.",
-    input_schema: obj({}),
-    run() {
-      const exps = listBrukerDemo().map((e) => ({ experiment: e, title: readBrukerDemo(e)?.title.split("\n").filter(Boolean).pop() ?? e }));
-      return { ok: true, result: { count: exps.length, experiments: exps }, summary: `${exps.length} raw 1H experiments` };
-    },
-  },
-  process_bruker_1d: {
-    name: "process_bruker_1d",
-    description:
-      "Process a raw Bruker 1D FID: digital-filter correction, apodization (lb Hz, window em/gm/sine/none), zero filling, Fourier transform, phasing ('procs' = TopSpin phases, 'auto', or 'manual' with ph0/ph1 degrees), optional polynomial baseline. Returns spectrometer settings, noise and the strongest peaks, and shows the spectrum.",
-    input_schema: obj(
-      {
-        experiment: { type: "string", description: "experiment name from list_bruker_experiments" },
-        lb: { type: "number", minimum: 0, maximum: 50 },
-        window: { type: "string", enum: ["em", "gm", "sine", "none"] },
-        phase: { type: "string", enum: ["procs", "auto", "manual"] },
-        ph0: { type: "number" },
-        ph1: { type: "number" },
-        baseline: { type: "string", enum: ["none", "poly"] },
-      },
-      ["experiment"],
-    ),
-    run(_state, args) {
-      const b = bruker(String(args.experiment));
-      if (!b.raw) return fail(b.error!);
-      try {
-        const spec = processBruker1D({ acqus: b.raw.acqus, procs: b.raw.procs, title: b.raw.title, fid: b.raw.fid }, processOptions(args));
-        const maxH = Math.max(...spec.peaks.map((p) => p.height), 1e-12);
-        const peaks = [...spec.peaks].sort((a, b2) => b2.height - a.height).slice(0, 15).map((p) => ({ ppm: r2(p.ppm, 3), relHeight: r2(p.height / maxH, 3), widthHz: r2(p.widthHz, 2) }));
-        return {
-          ok: true,
-          result: { experiment: args.experiment, title: spec.title, nucleus: spec.nucleus, solvent: spec.solvent, pulseProgram: spec.pulseProgram, sfMHz: r2(spec.sf, 4), swHz: r2(spec.swHz, 1), points: spec.si, ph0: r2(spec.ph0, 1), ph1: r2(spec.ph1, 1), noise: sci(spec.noise), peakCount: spec.peaks.length, strongestPeaks: peaks, options: spec.options },
-          ui: [{ type: "show_spectrum", view: "bruker1d", experiment: String(args.experiment) }],
-          summary: `Processed ${args.experiment}: ${spec.peaks.length} peaks`,
-        };
-      } catch (e) {
-        return { ...fail(`processing failed: ${errMsg(e)}`), ui: [{ type: "show_spectrum", view: "bruker1d", experiment: String(args.experiment) }] };
-      }
-    },
-  },
-
-  deconvolve_1d: {
-    name: "deconvolve_1d",
-    description: "Fit a region of a processed 1D spectrum with Lorentz/Gauss lineshapes (the deconvolution step): returns component positions (ppm), widths (Hz), amplitudes, areas and fit RMS.",
-    input_schema: obj(
-      {
-        experiment: { type: "string" },
-        region: { type: "array", items: { type: "number" }, minItems: 2, maxItems: 2, description: "[ppm A, ppm B]" },
-        maxComponents: { type: "integer", minimum: 1, maximum: 30 },
-      },
-      ["experiment", "region"],
-    ),
-    run(_state, args) {
-      const b = bruker(String(args.experiment));
-      if (!b.raw) return fail(b.error!);
-      const [a, c] = args.region as number[];
-      const region: [number, number] = [Math.max(a, c), Math.min(a, c)];
-      try {
-        const spec = processBruker1D({ acqus: b.raw.acqus, procs: b.raw.procs, title: b.raw.title, fid: b.raw.fid });
-        const fit = deconvolve1D(spec, region, typeof args.maxComponents === "number" ? { maxComponents: args.maxComponents } : undefined);
-        return {
-          ok: true,
-          result: {
-            experiment: args.experiment,
-            region: fit.region,
-            components: fit.components.map((k) => ({ ppm: r2(k.ppm, 4), widthHz: r2(k.widthHz, 2), amplitude: sci(k.amplitude), area: sci(k.area), lorentzFraction: r2(k.eta, 2) })),
-            rms: sci(fit.rms),
-            iterations: fit.iterations,
-          },
-          ui: [{ type: "show_spectrum", view: "bruker1d", experiment: String(args.experiment) }],
-          summary: `Deconvolved ${region[0]}–${region[1]} ppm: ${fit.components.length} components`,
-        };
-      } catch (e) {
-        return fail(`deconvolution failed: ${errMsg(e)}`);
-      }
-    },
-  },
-
   structure_neighbors: {
     name: "structure_neighbors",
     description: "Residues (and methyl carbons) within a radius of a residue — or of one of its atoms — in the loaded structure, with closest atom pairs and distances. Highlights them in 3D.",
@@ -832,7 +731,7 @@ async function importOutcome(job: ImportJob): Promise<ActionOutcome> {
 }
 
 // ----------------------------------------------------------------------------------- UI tools
-const VIEWS: SpectrumViewId[] = ["hsqc", "strips", "strips3d", "matrix", "bruker1d", "planes"];
+const VIEWS: SpectrumViewId[] = ["hsqc", "strips", "strips3d", "matrix", "planes"];
 const SCHEMES: ColorScheme[] = ["confidence", "secondary", "residue", "hydrophobicity", "bfactor"];
 const REPRS: Representation[] = ["cartoon", "cartoon+atoms", "sticks", "spheres"];
 
@@ -854,7 +753,7 @@ export const UI_TOOLS: UiToolImpl[] = [
   {
     name: "ui_show_spectrum",
     description:
-      "Switch the spectrum panel: 'hsqc' (1H-15N HSQC of the HN roots with assignments), 'strips' (HNCA/HNCACB backbone-walk strips, optionally centred on a root or residue list), 'strips3d' (rotatable 3D cube of a triple-resonance spectrum: HSQC floor, carbon peaks on stems above each amide, movable slice plane, sequential links; give experiment = spectrum type such as hnca or hncacb, optional root to highlight), 'matrix' (residue × residue sequential-link matrix), 'bruker1d' (raw 1D processing; give experiment), 'planes' (planes of the project's real 2D/3D spectra: give experiment = real spectrum name, optional at = ppm of the plane).",
+      "Switch the spectrum panel: 'hsqc' (1H-15N HSQC of the HN roots with assignments), 'strips' (HNCA/HNCACB backbone-walk strips, optionally centred on a root or residue list), 'strips3d' (rotatable 3D cube of a triple-resonance spectrum: HSQC floor, carbon peaks on stems above each amide, movable slice plane, sequential links; give experiment = spectrum type such as hnca or hncacb, optional root to highlight), 'matrix' (residue × residue sequential-link matrix), 'planes' (planes of the project's real 2D/3D spectra: give experiment = real spectrum name, optional at = ppm of the plane).",
     input_schema: obj(
       {
         view: { type: "string", enum: VIEWS },

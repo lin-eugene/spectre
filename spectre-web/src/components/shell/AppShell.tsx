@@ -57,8 +57,7 @@ function ViewerRow() {
               highlightResidues={state.highlights.residues}
               onSelectResidue={h.selectResidue}
               onSelectRoot={h.selectRoot}
-              brukerExperiment={state.brukerExperiment}
-              onBrukerExperimentChange={h.setBrukerExperiment}
+              cubeExperiment={state.cubeExperiment}
               planeSpectrum={state.planeSpectrum}
               planeAt={state.planeAt}
               onPlaneChange={h.setPlane}

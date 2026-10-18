@@ -66,7 +66,8 @@ export interface SpectreState {
   colorScheme: ColorScheme;
   representation: Representation;
   spectrumView: SpectrumViewId;
-  brukerExperiment: string | null;
+  /** spectrum type shown in the 'strips3d' view (e.g. hnca), from a deep link or the agent */
+  cubeExperiment: string | null;
   /** real spectrum shown in the 'planes' view and the ppm of its slice (null = projection) */
   planeSpectrum: string | null;
   planeAt: number | null;
@@ -97,7 +98,7 @@ type Action =
   | { type: "scheme"; scheme: ColorScheme }
   | { type: "representation"; representation: Representation }
   | { type: "view"; view: SpectrumViewId }
-  | { type: "bruker"; experiment: string | null }
+  | { type: "cube_experiment"; experiment: string | null }
   | { type: "plane"; spectrum: string | null; at: number | null }
   | { type: "chat_open"; open: boolean }
   | { type: "chat_user"; turn: ChatTurn }
@@ -124,7 +125,7 @@ const initialState: SpectreState = {
   colorScheme: "confidence",
   representation: "cartoon+atoms",
   spectrumView: "strips3d",
-  brukerExperiment: null,
+  cubeExperiment: null,
   planeSpectrum: null,
   planeAt: null,
   chatOpen: false,
@@ -138,7 +139,7 @@ const initialState: SpectreState = {
   uploadOpen: false,
 };
 
-const VIEWS: SpectrumViewId[] = ["hsqc", "strips", "strips3d", "matrix", "bruker1d", "planes"];
+const VIEWS: SpectrumViewId[] = ["hsqc", "strips", "strips3d", "matrix", "planes"];
 const SCHEMES: ColorScheme[] = ["confidence", "secondary", "residue", "hydrophobicity", "bfactor"];
 
 /** Residue number from an atom label like "43L". */
@@ -208,8 +209,8 @@ function reducer(state: SpectreState, a: Action): SpectreState {
       return { ...state, representation: a.representation };
     case "view":
       return { ...state, spectrumView: a.view };
-    case "bruker":
-      return { ...state, brukerExperiment: a.experiment };
+    case "cube_experiment":
+      return { ...state, cubeExperiment: a.experiment };
     case "plane":
       return { ...state, planeSpectrum: a.spectrum, planeAt: a.at };
     case "chat_open":
@@ -310,7 +311,6 @@ export interface SpectreApi {
   setColorScheme: (scheme: ColorScheme) => void;
   setRepresentation: (repr: Representation) => void;
   setSpectrumView: (view: SpectrumViewId) => void;
-  setBrukerExperiment: (exp: string) => void;
   setPlane: (spectrum: string | null, at: number | null) => void;
   clearHighlights: () => void;
   setChatOpen: (open: boolean) => void;
@@ -514,7 +514,7 @@ export function SpectreProvider({ children }: { children: ReactNode }) {
     const exp = q.get("experiment");
     const at = q.get("at");
     if (exp && view === "planes") dispatch({ type: "plane", spectrum: exp, at: at && !Number.isNaN(Number(at)) ? Number(at) : null });
-    else if (exp) dispatch({ type: "bruker", experiment: exp });
+    else if (exp) dispatch({ type: "cube_experiment", experiment: exp });
     const residue = q.get("residue");
     const root = q.get("root");
     if (residue && /^-?\d+$/.test(residue)) dispatch({ type: "select_residue", residue: parseInt(residue, 10) });
@@ -556,7 +556,7 @@ export function SpectreProvider({ children }: { children: ReactNode }) {
         case "show_spectrum":
           dispatch({ type: "view", view: a.view });
           if (a.view === "planes") dispatch({ type: "plane", spectrum: a.experiment ?? stateRef.current.planeSpectrum, at: a.at ?? null });
-          else if (a.experiment) dispatch({ type: "bruker", experiment: a.experiment });
+          else if (a.experiment) dispatch({ type: "cube_experiment", experiment: a.experiment });
           if (a.root) dispatch({ type: "select_root", root: a.root });
           else if (a.residues && a.residues.length) {
             dispatch({ type: "select_residue", residue: a.residues[0] });
@@ -820,7 +820,6 @@ export function SpectreProvider({ children }: { children: ReactNode }) {
       setColorScheme: (scheme) => dispatch({ type: "scheme", scheme }),
       setRepresentation: (representation) => dispatch({ type: "representation", representation }),
       setSpectrumView: (view) => dispatch({ type: "view", view }),
-      setBrukerExperiment: (experiment) => dispatch({ type: "bruker", experiment }),
       setPlane: (spectrum, at) => dispatch({ type: "plane", spectrum, at }),
       clearHighlights: () => dispatch({ type: "clear_highlights" }),
       setChatOpen: (open) => dispatch({ type: "chat_open", open }),

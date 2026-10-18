@@ -47,7 +47,7 @@ const FEATURES = [
   { icon: IconCube, title: "3D strips cube", text: "The HNCACB strips as a cube you can rotate, slice and click through." },
   { icon: IconAtom, title: "Interactive structure", text: "A three.js model of the protein: hover any atom to see what it is." },
   { icon: IconChat, title: "AI assistant", text: "Ask in plain English. It runs any step for you, from import to export." },
-  { icon: IconWave, title: "Bruker ¹H processing", text: "Raw FIDs processed in the browser, matching TopSpin." },
+  { icon: IconWave, title: "Your peak lists, as they are", text: "Sparky, XEASY/CYANA, NMRPipe and CcpNmr Analysis lists, each with its spectrum." },
   { icon: IconDownload, title: "Standard exports", text: "NMR-STAR, BMRB table, Sparky, assignment and peak lists." },
 ];
 

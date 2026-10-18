@@ -34,7 +34,7 @@ describe("action specs", () => {
     expect(new Set(names).size).toBe(names.length);
     expect(names.length).toBe(ACTION_NAMES.length + UI_TOOLS.length);
     // the assignment is the user's peak lists: nothing runs, nothing edits it
-    for (const gone of ["run_assignment", "set_parameters", "add_manual_adjustment", "fix_assignment", "edit_edge", "import_peak_list", "pick_peaks_real"]) expect(names).not.toContain(gone);
+    for (const gone of ["run_assignment", "set_parameters", "add_manual_adjustment", "fix_assignment", "edit_edge", "import_peak_list", "pick_peaks_real", "list_bruker_experiments", "process_bruker_1d", "deconvolve_1d"]) expect(names).not.toContain(gone);
   });
 
   it("validates arguments", () => {
@@ -108,12 +108,6 @@ describe("actions on the ubiquitin demo", () => {
     expect(csi.ok).toBe(true);
     expect((csi.result as { agreement: { percent: number } }).agreement.percent).toBeGreaterThan(70);
 
-    // raw Bruker data is not bundled: the processing actions run on B81434 when it is in the local
-    // Bruker directory
-    const bl = await run(s, "list_bruker_experiments");
-    expect(bl.ok).toBe(true);
-    const bruker = (bl.result as { experiments: { experiment: string }[] }).experiments.some((e) => e.experiment === "B81434");
-
     for (const format of EXPORT_FORMATS) {
       const out = await run(s, "export_results", { format });
       expect(out.ok, format).toBe(true);
@@ -122,9 +116,6 @@ describe("actions on the ubiquitin demo", () => {
     expect(star.preview).toContain("_Atom_chem_shift.Val");
     expect(star.preview).toContain("assigned peak lists");
 
-    expect((await run(s, "process_bruker_1d", { experiment: "B81434", phase: "procs" })).ok).toBe(bruker);
-    expect((await run(s, "deconvolve_1d", { experiment: "B81434", region: [7.6, 7.2], maxComponents: 6 })).ok).toBe(bruker);
-    expect((await run(s, "process_bruker_1d", { experiment: "../etc" })).ok).toBe(false);
     expect((await run(s, "list_real_spectra")).ok).toBe(true);
   });
 
@@ -147,6 +138,7 @@ describe("actions on the ubiquitin demo", () => {
     expect((await run(s, "ui_set_representation", { representation: "methyls" })).ok).toBe(false);
     expect((await run(s, "ui_color_structure", { scheme: "methyl" })).ok).toBe(false);
     expect((await run(s, "ui_show_spectrum", { view: "methyl" })).ok).toBe(false);
+    expect((await run(s, "ui_show_spectrum", { view: "bruker1d" })).ok).toBe(false);
   });
 
   it("keeps tool results compact", () => {

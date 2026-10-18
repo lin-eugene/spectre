@@ -135,7 +135,7 @@ export function ChatDrawer() {
                 <p className="m-0 font-medium">Ask anything about this assignment.</p>
                 <p className="m-0 mt-1 text-muted">
                   The assistant can explain conflicts, spin systems and strips, check a residue&apos;s peaks across spectra, compare the
-                  shifts with the structure, process raw Bruker FIDs, export NMR-STAR and drive the spectrum and 3D views.
+                  shifts with the structure, export NMR-STAR and drive the spectrum and 3D views.
                 </p>
               </div>
               <div>

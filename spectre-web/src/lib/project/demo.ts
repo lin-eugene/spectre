@@ -1,6 +1,5 @@
-// Server-side loaders for the demo data: the bundled ubiquitin demo (data/demo/ubiquitin: assigned
-// Sparky peak lists written from the BMRB 6457 shifts; see scripts/build-demo-data.mjs), and raw
-// Bruker 1D experiments, which are not bundled but read from a local directory (brukerDir).
+// Server-side loader for the bundled ubiquitin demo (data/demo/ubiquitin: assigned Sparky peak lists
+// written from the BMRB 6457 shifts; see scripts/build-demo-data.mjs).
 import fs from "node:fs";
 import path from "node:path";
 import { buildAssignment } from "../peaklists/build";
@@ -60,31 +59,5 @@ export function loadUbiquitinDemo(): ProjectState {
     pdb: { id: meta.pdbId, text: fs.readFileSync(path.join(dir, meta.pdb), "utf8") },
     results: { assignment: built.assignment },
     history: [],
-  };
-}
-
-/**
- * Where raw Bruker 1D experiments are read from (<dir>/<experiment>/fid, acqus, procs, title):
- * SPECTRE_BRUKER_DIR, else .data/bruker1h. None are bundled; the directory is git-ignored.
- */
-export function brukerDir(): string {
-  return process.env.SPECTRE_BRUKER_DIR || path.join(process.cwd(), ".data", "bruker1h");
-}
-
-export function listBrukerDemo(): string[] {
-  const dir = brukerDir();
-  if (!fs.existsSync(/*turbopackIgnore: true*/ dir)) return [];
-  return fs.readdirSync(dir).filter((d) => fs.existsSync(path.join(dir, d, "fid"))).sort();
-}
-
-export function readBrukerDemo(exp: string): { acqus: string; procs: string; title: string; fid: Uint8Array } | null {
-  if (!/^[A-Za-z0-9_-]+$/.test(exp)) return null;
-  const dir = path.join(brukerDir(), exp);
-  if (!fs.existsSync(path.join(dir, "fid"))) return null;
-  return {
-    acqus: fs.readFileSync(path.join(dir, "acqus"), "utf8"),
-    procs: fs.existsSync(path.join(dir, "procs")) ? fs.readFileSync(path.join(dir, "procs"), "utf8") : "",
-    title: fs.existsSync(path.join(dir, "title")) ? fs.readFileSync(path.join(dir, "title"), "utf8").trim() : exp,
-    fid: new Uint8Array(fs.readFileSync(path.join(dir, "fid"))),
   };
 }

@@ -133,7 +133,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
         The <strong>HSQC</strong> view shows one peak per amide root (labelled with its residue once assigned). <strong>Strips</strong> show 1D
         carbon traces of HNCA/HNCACB through consecutive amides: equal Cα/Cβ positions in neighbouring strips are the sequential walk. The{" "}
         <strong>link matrix</strong> is a residue × residue map of connectivity evidence (the analogue of AlphaFold&apos;s PAE).{" "}
-        <strong>Planes</strong> show the measured spectra; <strong>1D</strong> processes raw Bruker FIDs.
+        <strong>Planes</strong> show the measured spectra.
       </>
     ),
   },
@@ -144,7 +144,7 @@ const FAQ: { q: string; a: React.ReactNode }[] = [
         Ubiquitin chemical shifts from BMRB entry 6457 and the crystal structure PDB 1UBQ. The shifts were written out as assigned Sparky peak
         lists for HNCA, HNCACB, HNCO and HN(CA)CO, with experimental-style jitter, a few missing peaks and three broadened amides; the demo has
         no spectra behind the lists. Real spectra and their deposited peak lists come from the ARTINA dataset (nmrdb.ethz.ch, CC BY 4.0),
-        or from your own uploads. The 1D view processes raw Bruker FIDs placed on the server (none are bundled).
+        or from your own uploads.
       </>
     ),
   },

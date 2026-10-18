@@ -2,7 +2,7 @@
 
 Hackathon project, 17 October 2026.
 
-- `spectre-web/`: Spectre, the web app (Next.js). See its [README](spectre-web/README.md).
+- `spectre-web/`: Spectre, the web app (Next.js).
 
 Spectre is a concept for a user interface that makes protein NMR assignment and analysis more
 intuitive and easier for scientists. It shows a protein's backbone assignment, built from your 3D

@@ -95,9 +95,6 @@ export function SpectraList() {
         >
           Open strips
         </button>
-        <button type="button" className="text-[13px] text-accent hover:underline" onClick={() => setSpectrumView("bruker1d")}>
-          Raw ¹H FIDs (Bruker)
-        </button>
       </div>
     </div>
   );
