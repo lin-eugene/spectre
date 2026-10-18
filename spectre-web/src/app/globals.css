@@ -1,0 +1,278 @@
+@import "tailwindcss";
+
+/* ------------------------------------------------------------------
+   Spectre design tokens. Light palette on :root, dark palette applied
+   either by the OS (no explicit choice) or by data-theme="dark".
+   ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f3f4f6; /* sequence box, wells */
+  --surface-3: #eceef2;
+  --fg: #1a1f26;
+  --muted: #566170;
+  --faint: #8b94a2;
+  --line: #e2e5ea;
+  --line-strong: #cbd1d9;
+  --accent: #2c63b4; /* EMBL-EBI / AlphaFold link blue */
+  --accent-hover: #1f4f96;
+  --accent-soft: #d6e3f4; /* legend header bar */
+  --accent-faint: #eef3fb;
+  --accent-fg: #ffffff;
+  --number: #c8744a; /* AlphaFold residue numbers */
+  --danger: #c2412d;
+  --danger-soft: #fbe9e5;
+  --ok: #1d7a4f;
+  --ok-soft: #e3f3ea;
+  --warn: #9a6a00;
+  --warn-soft: #fff4d6;
+  --shadow: 0 1px 2px rgb(16 24 40 / 0.05), 0 1px 3px rgb(16 24 40 / 0.06);
+  --shadow-lg: 0 12px 32px rgb(16 24 40 / 0.14), 0 2px 6px rgb(16 24 40 / 0.06);
+  --ring: 0 0 0 3px rgb(44 99 180 / 0.28);
+  --conf-very-high: #0053d6;
+  --conf-high: #65cbf3;
+  --conf-low: #ffdb13;
+  --conf-unassigned: #ff7d45;
+  --conf-proline: #b7bdc6;
+  --drawer-w: 440px;
+  --topbar-h: 56px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --surface: #131922;
+    --surface-2: #1a212c;
+    --surface-3: #212a36;
+    --fg: #e6ebf1;
+    --muted: #a7b1bf;
+    --faint: #7c8796;
+    --line: #26303c;
+    --line-strong: #364252;
+    --accent: #6fa4f1;
+    --accent-hover: #93bbf6;
+    --accent-soft: #1b2b44;
+    --accent-faint: #152033;
+    --accent-fg: #08111f;
+    --number: #e39a70;
+    --danger: #f08a77;
+    --danger-soft: #3a1d18;
+    --ok: #6fd3a2;
+    --ok-soft: #13301f;
+    --warn: #f0c45a;
+    --warn-soft: #362c12;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.55);
+    --ring: 0 0 0 3px rgb(111 164 241 / 0.35);
+    --conf-proline: #6b7480;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #131922;
+  --surface-2: #1a212c;
+  --surface-3: #212a36;
+  --fg: #e6ebf1;
+  --muted: #a7b1bf;
+  --faint: #7c8796;
+  --line: #26303c;
+  --line-strong: #364252;
+  --accent: #6fa4f1;
+  --accent-hover: #93bbf6;
+  --accent-soft: #1b2b44;
+  --accent-faint: #152033;
+  --accent-fg: #08111f;
+  --number: #e39a70;
+  --danger: #f08a77;
+  --danger-soft: #3a1d18;
+  --ok: #6fd3a2;
+  --ok-soft: #13301f;
+  --warn: #f0c45a;
+  --warn-soft: #362c12;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 16px 40px rgb(0 0 0 / 0.55);
+  --ring: 0 0 0 3px rgb(111 164 241 / 0.35);
+  --conf-proline: #6b7480;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-faint: var(--accent-faint);
+  --color-accent-fg: var(--accent-fg);
+  --color-number: var(--number);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--ring);
+  border-radius: 6px;
+}
+
+/* thin, quiet scrollbars inside panels */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* AlphaFold-style "offset shadow" call-to-action button */
+.cta-offset {
+  position: relative;
+  border: 2px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 6px 6px 0 0 var(--accent);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.cta-offset:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 4px 4px 0 0 var(--accent);
+}
+.cta-offset:active {
+  transform: translate(6px, 6px);
+  box-shadow: 0 0 0 0 var(--accent);
+}
+
+/* sequence box */
+.seq-residue {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  width: 1.02ch;
+  margin-right: 0.08ch;
+  padding: 1px 0 3px;
+  cursor: pointer;
+  border-radius: 2px;
+  line-height: 1.15;
+}
+.seq-residue::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-radius: 1.5px;
+  background: var(--conf, transparent);
+}
+.seq-residue:hover {
+  background: var(--surface-3);
+}
+.seq-residue[data-selected="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.seq-residue[data-highlight="true"] {
+  box-shadow: inset 0 0 0 1.5px var(--hl, var(--accent));
+}
+.seq-number {
+  position: absolute;
+  left: 0;
+  top: -0.95rem;
+  font-size: 0.62rem;
+  line-height: 1;
+  color: var(--number);
+  font-feature-settings: "tnum";
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* streaming caret */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.caret::after {
+  content: "";
+  display: inline-block;
+  width: 0.5ch;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -0.12em;
+  background: currentColor;
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s linear infinite;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .caret::after {
+    animation: none;
+  }
+  .cta-offset {
+    transition: none;
+  }
+}
+
+
+/* keep the spectrum and structure in view while the right-hand column scrolls */
+@media (min-height: 820px) {
+  @container (min-width: 1240px) {
+    .viewer-sticky {
+      position: sticky;
+      top: calc(var(--topbar-h) + 16px);
+      align-self: start;
+    }
+  }
+}

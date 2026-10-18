@@ -1,0 +1,30 @@
+{
+  "id": "ubiquitin",
+  "name": "Ubiquitin",
+  "organism": "Homo sapiens",
+  "uniprot": "P0CG48",
+  "pdbId": "1UBQ",
+  "bmrbId": "6457",
+  "sequence": "MQIFVKTLTGKTITLEVEPSDTIENVKAKIQDKEGIPPDQQRLIFAGKQLEDGRTLSDYNIQKESTLHLVLRLRGG",
+  "firstResidue": 1,
+  "description": "Human ubiquitin (76 aa). Assigned HNCA, HNCACB, HNCO and HN(CA)CO peak lists written from the BMRB 6457 shifts, with jitter, missing peaks and three broadened amides.",
+  "peakLists": [
+    {
+      "file": "peaklists/hnca.list",
+      "experiment": "hnca"
+    },
+    {
+      "file": "peaklists/hncacb.list",
+      "experiment": "hncacb"
+    },
+    {
+      "file": "peaklists/hnco.list",
+      "experiment": "hnco"
+    },
+    {
+      "file": "peaklists/hncaco.list",
+      "experiment": "hncaco"
+    }
+  ],
+  "pdb": "1ubq.pdb"
+}
